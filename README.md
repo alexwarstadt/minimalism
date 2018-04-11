@@ -1,2 +1,2 @@
 # minimalism
-Implementation of A Formalization of Minimalist Synta (Collins &amp; Stabler, 2016)
+Implementation of A Formalization of Minimalist Syntax (Collins &amp; Stabler, 2016)
