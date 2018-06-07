@@ -1,10 +1,10 @@
 from typing import *
 
-class UniversalGrammar:
-    def __init__(self):
-        phon_F: Set[Phon_Feature]
-        syn_F: Set[Feature]
-        sem_F: Set[Feature]
+class UniversalGrammar(object):
+    def __init__(self, syn_F, sem_F, phon_F):
+        self.syn_F: Set[Feature] = syn_F
+        self.sem_F: Set[Feature] = sem_F
+        self.phon_F: Set[Phon_Feature] = phon_F
 
     def select(self):
         pass
@@ -16,30 +16,30 @@ class UniversalGrammar:
         pass
 
 
-class Lexicon:
-    def __init__(self):
-        lex: Set[LexicalItem]
+class Lexicon(object):
+    def __init__(self, lex):
+        self.lex: Set[LexicalItem] = lex
 
-class ILanguage:
+class ILanguage(object):
     def __init__(self, lexicon, ug):
         self.lexicon = lexicon
         self.ug = ug
 
-class SyntacticObject:
+class SyntacticObject(object):
     """Abstract class, never instantiated. Has two subtypes, base case, recursive case"""
     def __init__(self, idx: int):
         self.idx = idx
 
     def i_contains(self, a):
         """self immediately contains a if a is an element of self"""
-        if self is SyntacticObjectSet:
+        if type(self) is SyntacticObjectSet:
             return a in self.syntactic_object_set
         else:
             return False
 
     def contains(self, a):
         """self contains a if self immediately contains a, or some daughter of self contains a"""
-        if self is SyntacticObjectSet:
+        if type(self) is SyntacticObjectSet:
             if self.i_contains(a):
                 return True
             else:
@@ -51,11 +51,26 @@ class SyntacticObject:
             return False
 
     def merge(self, a, counter: int):
-        new_so = SyntacticObjectSet(set(self, a), counter)
+        new_so = SyntacticObjectSet(set([self, a]), counter)
+        counter += 1
         return new_so
 
+    def find(self, idx: int):
+        if self.idx == idx:
+            return self
+        else:
+            if type(self) is LexicalItemToken:
+                return None
+            elif type(self) is SyntacticObjectSet:
+                for syn_obj in self.syntactic_object_set:
+                    found = syn_obj.find(idx)
+                    if found != None:
+                        return found
+                return None
 
-class LexicalItem:
+
+
+class LexicalItem(object):
     def __init__(self, syn, sem, phon):
         self.syn: Set[Feature] = syn
         self.sem: Set[Feature] = sem
@@ -71,20 +86,28 @@ class SyntacticObjectSet(SyntacticObject):
 class LexicalItemToken(SyntacticObject):
     """Alex: this annoys me. Why can't this just be a singleton set, and unify the two types of SOs?"""
     # todo: counter for initializing lexical item tokens
-    def __init__(self, lexical_item, idx):
-        super(LexicalItemToken).__init__(idx)
+    def __init__(self, lexical_item, idx: int):
+        super(LexicalItemToken, self).__init__(idx)
         self.lexical_item = lexical_item
 
 
-class LexicalArray:
+class LexicalArray(object):
     def __init__(self, the_list):
         self.the_list: Set[LexicalItemToken] = the_list
 
     def __copy__(self):
         return LexicalArray(self.the_list)
 
+    def find(self, idx):
+        s_objs_with_idx = [x for x in self.the_list if x.idx == idx]
+        if len(s_objs_with_idx) == 1:
+            return s_objs_with_idx[0]
+        else:
+            raise Exception("The lexical array should contain exactly 1 element with the given index")
 
-class Workspace:
+
+
+class Workspace(object):
     def __init__(self, w: Set[SyntacticObject]):
         self.w = w
 
@@ -93,38 +116,52 @@ class Workspace:
         new_set.remove(other)
         return Workspace(new_set)
 
-    def __add__(self, other):
-        new_set = set(self.w)
-        new_set.add(other)
+    def __add__(self, other: SyntacticObject):
+        new_set = set()
+        if type(other) is SyntacticObjectSet:
+            new_set = self.w.union(other.syntactic_object_set)
+        if type(other) is LexicalItemToken:
+            word_set = set([other])
+            new_set = self.w.union(word_set)
+        else:
+            Exception("you added something that isn't a syntactic object to the workspace")
         return Workspace(new_set)
 
     def __copy__(self):
         return Workspace(set(self.w))
 
+    def find(self, idx: int):
+        for syn_obj in self.w:
+            found = syn_obj.find(idx)
+            if found != None:
+                return found
+        raise Exception("There is no syntactic object with this index in the workspace.")
 
-class Stage:
+
+
+class Stage(object):
     def __init__(self, lexical_array: LexicalArray, w: Workspace):
         self.lexical_array = lexical_array
-        self.w = w
+        self.workspace = w
 
     def is_root(self, x: SyntacticObject):
-        return x in self.w
+        return x in self.workspace.w
 
     def select(self, a: LexicalItemToken):
-        if a not in self.lexical_array:
+        if a not in self.lexical_array.the_list:
             raise Exception("The lexical array does not contain this lexical item.")
         else:
             new_LI_set = self.lexical_array.the_list.copy()
             new_LI_set.remove(a)
             new_LA = LexicalArray(new_LI_set)
-            new_w = self.w.syntactic_object_set.copy()
-            new_w = new_w.union(set(a))
+            new_w = self.workspace.__copy__()
+            new_w = new_w.__add__(a)
             new_stage = Stage(self.lexical_array, new_w)
             return new_stage
 
     def merge(self, A, B):
-        new_so = A.merge(B)
-        new_workspace = self.w.__copy__()
+        new_so = A.merge(B,counter)
+        new_workspace = self.workspace.__copy__()
         new_workspace -= A
         new_workspace -= B
         new_workspace += new_so
@@ -132,11 +169,12 @@ class Stage:
         return new_stage
 
 
-class Derivation:
+class Derivation(object):
     def __init__(self, stages: List[Stage], i_lang: ILanguage):
         self.stages = stages
         self.i_lang = i_lang
-
+        
+    
 
     # def verify(self):
         # todo: finish from definition 14 in C&S
@@ -150,19 +188,22 @@ class Derivation:
     def derive(self):
         """side effects only. Modifies self.stages"""
         last_stage = self.stages[-1]
-        print(last_stage.lexical_array)
-        print(last_stage.w)
+        print(last_stage.lexical_array.__str__())
+        print(last_stage.workspace.__str__())
         while(True):
             instruction = input("Select (s) or Merge (m)? ")
             if instruction == "m":
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge"))
                 index2 = int(input("Enter the index of the second syntactic object you would like to Merge"))
-                A = last_stage.w.find(index1)
-                B = last_stage.w.find(index2)
-                new_stage = last_stage.merge(A, B)
-                self.stages.append(new_stage)
-                break
-            if instruction == "s":
+                A = last_stage.workspace.find(index1)
+                B = last_stage.workspace.find(index2)
+                if last_stage.is_root(A) or last_stage.is_root(B):
+                    new_stage = last_stage.merge(A, B)
+                    self.stages.append(new_stage)
+                    break
+                else:
+                    print("One of the syntactic objects must be a root of some tree in the workspace")
+            elif instruction == "s":
                 index = int(input("Enter the index of the token you would like to Select"))
                 lexical_item_token = last_stage.lexical_array.find(index)
                 new_stage = last_stage.select(lexical_item_token)
@@ -170,16 +211,62 @@ class Derivation:
                 break
 
 
+def first_stage(lexical_array):
+    w_zero = Workspace(set())
+    return Stage(lexical_array, w_zero)
+    
+    
+
+counter = 100
 
 
-        
 
-
-
-class Feature:
+class Feature(object):
+    def __init__(self):
+        pass
     """what are these?"""
 
+class Syn_Feature(Feature):
+    def __init__(self):
+        super(Syn_Feature, self).__init__()
+        pass
+
+class Cat_Feature(Syn_Feature):
+    def __init__(self, label):
+        super(Cat_Feature, self).__init__()
+        self.label = label
+
+class Sel_Feature(Syn_Feature):
+    def __init__(self, label):
+        super(Sel_Feature, self).__init__()
+        self.label = label
+
 class Phon_Feature(Feature):
-    def __init__(self, feature_name, value):
-        self.feature_name = feature_name
+    def __init__(self, value):
         self.value = value
+
+def main():
+    nouncat = Cat_Feature("N")
+    nounsel = Sel_Feature("N")
+    k = Phon_Feature("K8")
+    verbcat = Cat_Feature("V")
+    r = Phon_Feature("runs")
+    kate = LexicalItem(set([nouncat]), set(), set([k]))
+    runs = LexicalItem(set([verbcat, nounsel]), set(), set([r]))
+    kate_token = LexicalItemToken(kate, 1)
+    runs_token = LexicalItemToken(runs, 2)
+    
+    lexicon = Lexicon(set([kate, runs]))
+    ug = UniversalGrammar(set([nouncat, nounsel, verbcat]), set(), set([k, r]))
+    i_lang = ILanguage(lexicon, ug)
+    lex_array = LexicalArray([kate_token, runs_token])
+    derivation = Derivation([first_stage(lex_array)], i_lang)
+
+    while (True):
+        derivation.derive()
+    
+    
+    
+    
+
+main()
