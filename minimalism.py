@@ -322,6 +322,7 @@ def main():
         derivation.derive()
     '''
 
+    # prints the phonological features of each member of the lexicon
     lexicon = Lexicon()
     print('The Lexicon:')
     for w in lexicon.lex:
