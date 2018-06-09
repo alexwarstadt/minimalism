@@ -2,12 +2,18 @@ from derivations import *
 from structures import *
 
 def main():
-    # prints the phonological features of each member of the lexicon
     lexicon = Lexicon()
-    print('The Lexicon:')
+    counter = 0
+    lex_array_list = []
     for w in lexicon.lex:
-        for f in w.phon:
-            print(f.label)
+        new_token = LexicalItemToken(w, counter)
+        lex_array_list.append(new_token)
+        counter += 1
+    lex_array = LexicalArray(lex_array_list)
+    ug = UniversalGrammar(set(), set(), set()) # todo: add feature import to UG
+    i_lang = ILanguage(lexicon, ug)
+    derivation = Derivation(i_lang, lex_array=lex_array)
+    derivation.derive()
 
 
 

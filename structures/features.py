@@ -42,5 +42,5 @@ class Phon_Feature(Feature):
         self.label = label
 
     def __str__(self):
-        rep = self.value
+        rep = self.label
         return rep

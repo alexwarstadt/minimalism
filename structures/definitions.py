@@ -126,7 +126,7 @@ class LexicalArray(object):
         if len(s_objs_with_idx) == 1:
             return s_objs_with_idx[0]
         else:
-            raise Exception("The lexical array should contain exactly 1 element with the given index")
+            return None
 
 
 class Workspace(object):
@@ -263,8 +263,8 @@ class Derivation(object):
         while (True):
             instruction = input("Select (s) or Merge (m)? ")
             if instruction == "m":
-                index1 = int(input("Enter the index of the first syntactic object you would like to Merge"))
-                index2 = int(input("Enter the index of the second syntactic object you would like to Merge"))
+                index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
+                index2 = int(input("Enter the index of the second syntactic object you would like to Merge: "))
                 if last_stage.is_root(index1) or last_stage.is_root(index2):
                     new_stage = last_stage.merge(index1, index2)
                     self.stages.append(new_stage)
@@ -281,9 +281,12 @@ class Derivation(object):
                     break
                 '''
             elif instruction == "s":
-                index = int(input("Enter the index of the token you would like to Select"))
-                lexical_item_token = last_stage.lexical_array.find(index)
+                index = -1
+                lexical_item_token = None
+                while (lexical_item_token is None):
+                    index = int(input("Enter the index of the token you would like to Select: "))
+                    lexical_item_token = last_stage.lexical_array.find(index)
                 new_stage = last_stage.select(lexical_item_token)
                 self.stages.append(new_stage)
-                break
+
 
