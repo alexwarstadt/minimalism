@@ -1,54 +1,9 @@
 from typing import *
-
-# for xml parsing of imported lexicon
-import os
-from xml.etree import ElementTree
+from .features import *
 
 
-class Feature(object):
-    def __init__(self):
-        pass
-
-class Syn_Feature(Feature):
-    def __init__(self):
-        super(Syn_Feature, self).__init__()
-        pass
-
-class Sem_Feature(Feature):
-    def __init__(self,label: str):
-        super(Sem_Feature, self).__init__()
-        self.label = label
-
-class Cat_Feature(Syn_Feature):
-    def __init__(self, label: str):
-        super(Syn_Feature, self).__init__()
-        pass
-
-class Cat_Feature(Syn_Feature):
-    def __init__(self, label):
-        super(Cat_Feature, self).__init__()
-        self.label = label
-        
-    def __str__(self):
-        rep = self.label
-        return rep
-
-class Sel_Feature(Syn_Feature):
-    def __init__(self, label: str):
-        super(Sel_Feature, self).__init__()
-        self.label = label
-    
-    def __str__(self):
-        rep = "_" + self.label
-        return rep
-
-class Phon_Feature(Feature):
-    def __init__(self, label: str):
-        self.label = label
-
-    def __str__(self):
-        rep = self.value
-        return rep
+#GLOBAL
+counter = 100
 
 class UniversalGrammar(object):
     def __init__(self, syn_F, sem_F, phon_F):
@@ -66,64 +21,15 @@ class UniversalGrammar(object):
         pass
 
 
-class Lexicon(object):
-    def __init__(self):
-        self.lex: Set[LexicalItem] = set()
-        # get the file path to lexicon data
-        file_name = "lexicon.xml"
-        full_file = os.path.abspath(os.path.join("data", file_name))
-        # create xml tree
-        dom = ElementTree.parse(full_file)
-        # extract data and create lexical items
-        words = dom.findall('word')
-        for w in words:
-            # extract word data
-            phon = w.find('phon').text
-            cat = w.find('syn/cat').text
-            sel = w.find('syn/sel').text
-            sem = w.find('sem').text
-            # create phon features
-            phon = phon.strip()
-            phon_list = phon.split()
-            phon_set = set()
-            for f in phon_list:
-                new_feat = Phon_Feature(f)
-                phon_set.add(new_feat)
-            # create sem features
-            sem = sem.strip()
-            sem_list = sem.split()
-            sem_set = set()
-            for f in sem_list:
-                new_feat = Sem_Feature(f)
-                sem_set.add(new_feat)
-            # create cat features
-            cat = cat.strip()
-            cat_list = cat.split()
-            cat_set = set()
-            for f in cat_list:
-                new_feat = Cat_Feature(f)
-                cat_set.add(new_feat)
-            # create sel features
-            sel = sel.strip()
-            sel_list = sel.split()
-            sel_set = set()
-            for f in sel_list:
-                new_feat = Sel_Feature(f)
-                sel_set.add(new_feat)
-            syn_set = set()
-            syn_set.union(sel_set)
-            syn_set.union(cat_set)
-            new_word = LexicalItem(syn_set, sem_set, phon_set)
-            self.lex.add(new_word)
-
-
 class ILanguage(object):
     def __init__(self, lexicon, ug):
         self.lexicon = lexicon
         self.ug = ug
 
+
 class SyntacticObject(object):
     """Abstract class, never instantiated. Has two subtypes, base case, recursive case"""
+
     def __init__(self, idx: int):
         self.idx = idx
 
@@ -166,7 +72,6 @@ class SyntacticObject(object):
                 return None
 
 
-
 class LexicalItem(object):
     def __init__(self, syn, sem, phon):
         self.syn: Set[Syn_Feature] = syn
@@ -174,8 +79,8 @@ class LexicalItem(object):
         self.phon: Set[Phon_Feature] = phon
 
     def __str__(self):
-        syn_features = { str(f) for f in self.syn }
-        phon_features = { str(f) for f in self.phon }
+        syn_features = {str(f) for f in self.syn}
+        phon_features = {str(f) for f in self.phon}
         rep = "( Syn: " + str(syn_features) + ", Phon: " + str(phon_features) + " )"
         return rep
 
@@ -186,18 +91,19 @@ class SyntacticObjectSet(SyntacticObject):
         self.syntactic_object_set: Set[SyntacticObject] = the_set
 
     def __str__(self):
-        set_strings = { str(obj)  for obj in self.syntactic_object_set }
+        set_strings = {str(obj) for obj in self.syntactic_object_set}
         rep = "< " + str(self.idx) + ": " + str(set_strings) + " >"
         return str(rep)
 
 
 class LexicalItemToken(SyntacticObject):
     """Alex: this annoys me. Why can't this just be a singleton set, and unify the two types of SOs?"""
+
     # todo: counter for initializing lexical item tokens
     def __init__(self, lexical_item: LexicalItem, idx: int):
         super(LexicalItemToken, self).__init__(idx)
         self.lexical_item = lexical_item
-    
+
     def __str__(self):
         rep = "< " + str(self.idx) + ": " + str(self.lexical_item) + " >"
         return rep
@@ -209,9 +115,9 @@ class LexicalArray(object):
 
     def __copy__(self):
         return LexicalArray(self.the_list)
-    
+
     def __str__(self):
-        set_strings = { str(token) for token in self.the_list }
+        set_strings = {str(token) for token in self.the_list}
         rep = "Lex Array: " + str(set_strings)
         return rep
 
@@ -221,7 +127,6 @@ class LexicalArray(object):
             return s_objs_with_idx[0]
         else:
             raise Exception("The lexical array should contain exactly 1 element with the given index")
-
 
 
 class Workspace(object):
@@ -251,11 +156,12 @@ class Workspace(object):
         if not self.w:
             return "Workspace: (empty)"
         else:
-            set_strings = { str(obj) for obj in self.w }
+            set_strings = {str(obj) for obj in self.w}
             rep = "Workspace: " + str(set_strings)
             return rep
 
     """ TODO: add recursive find for internal merge """
+
     def find(self, idx: int):
         for syn_obj in self.w:
             found = syn_obj.find(idx)
@@ -264,11 +170,11 @@ class Workspace(object):
         raise Exception("There is no syntactic object with this index in the workspace.")
 
     def is_root(self, idx: int):
-        results = [ x for x in self.w if x.idx == idx]
+        results = [x for x in self.w if x.idx == idx]
         if len(results) == 1:
             return True
         elif len(results) == 0:
-            return False  
+            return False
         else:
             raise Exception("There are multiple tree roots with the given index.")
 
@@ -276,13 +182,12 @@ class Workspace(object):
     def merge(self, i: int, j: int):
         A = self.find(i)
         B = self.find(j)
-        new_obj = A.merge(B,counter)
+        new_obj = A.merge(B, counter)
         new_set = self.w
         new_set.add(new_obj)
         new_set.remove(A)
         new_set.remove(B)
         return Workspace(new_set)
-
 
 
 class Stage(object):
@@ -306,13 +211,14 @@ class Stage(object):
             return new_stage
 
     # Omar: Stage.merge() now calls Workspace.merge(),
-    # I'm passing indices instead of objects to get around 
+    # I'm passing indices instead of objects to get around
     # object equality testing bug
     def merge(self, i, j):
         old_workspace = self.workspace
-        new_workspace = old_workspace.merge(i,j)
+        new_workspace = old_workspace.merge(i, j)
         new_stage = Stage(self.lexical_array.__copy__(), new_workspace)
         return new_stage
+
 
 '''         Old version didn't work
     def merge(self, A, B):
@@ -327,27 +233,34 @@ class Stage(object):
 
 
 class Derivation(object):
-    def __init__(self, stages: List[Stage], i_lang: ILanguage):
-        self.stages = stages
+    def __init__(self, i_lang: ILanguage, stages: List[Stage] = None, lex_array: LexicalArray = None):
+        """
+        To initialize from a pre-existing derivation pass in list of stages.
+        To initialize a new derivation, pass in a lexical array.
+        """
         self.i_lang = i_lang
-        
-    
+        if stages is None:
+            if lex_array is None:
+                raise Exception("A derivation requires either a list of stages or a lexical array to be initialized.")
+            w_zero = Workspace(set())
+            stages = [Stage(lex_array, w_zero)]
+        self.stages = stages
 
     # def verify(self):
-        # todo: finish from definition 14 in C&S
-        # for lex_tok in self.stages[0].lexical_array.the_list:
-        #     if lex_tok not in self.i_lang.lexicon:
-        #         raise Exception(str(lex_tok) + ":  this word is not in the lexicon.")
-        # if (len(self.stages[0].w.syntactic_object_set) != 0):
-        #     raise Exception("The initial workspace is not empty.")
-        # consider whether verifying constraints on valid derivations in necessary
+    # todo: finish from definition 14 in C&S
+    # for lex_tok in self.stages[0].lexical_array.the_list:
+    #     if lex_tok not in self.i_lang.lexicon:
+    #         raise Exception(str(lex_tok) + ":  this word is not in the lexicon.")
+    # if (len(self.stages[0].w.syntactic_object_set) != 0):
+    #     raise Exception("The initial workspace is not empty.")
+    # consider whether verifying constraints on valid derivations in necessary
 
     def derive(self):
         """side effects only. Modifies self.stages"""
         last_stage = self.stages[-1]
         print(last_stage.lexical_array.__str__())
         print(last_stage.workspace.__str__())
-        while(True):
+        while (True):
             instruction = input("Select (s) or Merge (m)? ")
             if instruction == "m":
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge"))
@@ -374,69 +287,3 @@ class Derivation(object):
                 self.stages.append(new_stage)
                 break
 
-
-# Global stuff
-
-def first_stage(lexical_array):
-    w_zero = Workspace(set())
-    return Stage(lexical_array, w_zero)
-    
-    
-
-counter = 100
-
-# for xml parsing of imported lexicon
-
-
-# for xml parsing of imported lexicon
-# Chris: xml parsing done in the lexicon constructor
-
-def main():
-    # prints the phonological features of each member of the lexicon
-    lexicon = Lexicon()
-    print('The Lexicon:')
-    for w in lexicon.lex:
-        for f in w.phon:
-            print(f.label)
-
-'''
-# main that runs Omar's new merge
-def main():
-
-    # Syntactic fragment
-    ncat = Cat_Feature("N")
-    nsel = Sel_Feature("N")
-    k = Phon_Feature("K8")
-    vcat = Cat_Feature("V")
-    r = Phon_Feature("runs")
-    e = Phon_Feature("eats")
-    a = Phon_Feature("apples")
-    kate = LexicalItem(set([ncat]), set(), set([k]))
-    runs = LexicalItem(set([vcat, nsel]), set(), set([r]))
-    eats = LexicalItem(set([vcat, nsel, nsel]), set(), set([e]))
-    apples = LexicalItem(set([ncat]), set(), set([a]))
-    kate1 = LexicalItemToken(kate, 1)
-    runs2 = LexicalItemToken(runs, 2)
-    eats3 = LexicalItemToken(eats, 3)
-    apples4 = LexicalItemToken(apples, 4)
-
-    # Intransitive verb merge test
-    lexicon = Lexicon(set([kate, runs]))
-    ug = UniversalGrammar(set([ncat, nsel, vcat]), set(), set([k, r]))
-    i_lang = ILanguage(lexicon, ug)
-    lex_array = LexicalArray([kate1, runs2])
-    initial = first_stage(lex_array)
-    derivation = Derivation([initial], i_lang)
-    # testing merge
-    # wksp = Workspace(set([kate_token, runs_token]))
-    # print(wksp)
-    # new_wksp = wksp.merge(1,2)
-    # print(new_wksp)
-
-    while (True):
-        derivation.derive()
-
-'''
-    
-
-main()
