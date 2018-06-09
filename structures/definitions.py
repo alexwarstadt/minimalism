@@ -2,9 +2,6 @@ from typing import *
 from .features import *
 
 
-#GLOBAL
-counter = 100
-
 class UniversalGrammar(object):
     def __init__(self, syn_F, sem_F, phon_F):
         self.syn_F: Set[Syn_Feature] = syn_F
@@ -53,9 +50,8 @@ class SyntacticObject(object):
         else:
             return False
 
-    def merge(self, a, counter: int):
-        new_so = SyntacticObjectSet(set([self, a]), counter)
-        counter += 1
+    def merge(self, a, idx: int):
+        new_so = SyntacticObjectSet(set([self, a]), idx)
         return new_so
 
     def find(self, idx: int):
@@ -97,9 +93,7 @@ class SyntacticObjectSet(SyntacticObject):
 
 
 class LexicalItemToken(SyntacticObject):
-    """Alex: this annoys me. Why can't this just be a singleton set, and unify the two types of SOs?"""
 
-    # todo: counter for initializing lexical item tokens
     def __init__(self, lexical_item: LexicalItem, idx: int):
         super(LexicalItemToken, self).__init__(idx)
         self.lexical_item = lexical_item
@@ -179,10 +173,10 @@ class Workspace(object):
             raise Exception("There are multiple tree roots with the given index.")
 
     # Omar: this is new, uses indices to merge objects
-    def merge(self, i: int, j: int):
+    def merge_w(self, i: int, j: int, idx):
         A = self.find(i)
         B = self.find(j)
-        new_obj = A.merge(B, counter)
+        new_obj = A.merge(B, idx)
         new_set = self.w
         new_set.add(new_obj)
         new_set.remove(A)
@@ -191,9 +185,10 @@ class Workspace(object):
 
 
 class Stage(object):
-    def __init__(self, lexical_array: LexicalArray, w: Workspace):
+    def __init__(self, lexical_array: LexicalArray, w: Workspace, counter):
         self.lexical_array = lexical_array
         self.workspace = w
+        self.counter = counter
 
     def is_root(self, idx: int):
         return self.workspace.is_root(idx)
@@ -207,44 +202,43 @@ class Stage(object):
             new_LA = LexicalArray(new_LI_set)
             new_w = self.workspace.__copy__()
             new_w = new_w.__add__(a)
-            new_stage = Stage(new_LA, new_w)
+            new_stage = Stage(new_LA, new_w, self.counter)
             return new_stage
 
     # Omar: Stage.merge() now calls Workspace.merge(),
     # I'm passing indices instead of objects to get around
     # object equality testing bug
-    def merge(self, i, j):
+    def merge_s(self, i, j):
         old_workspace = self.workspace
-        new_workspace = old_workspace.merge(i, j)
-        new_stage = Stage(self.lexical_array.__copy__(), new_workspace)
+        new_workspace = old_workspace.merge_w(i, j, self.counter)
+        self.counter += 1
+        new_stage = Stage(self.lexical_array.__copy__(), new_workspace, self.counter)
         return new_stage
-
-
-'''         Old version didn't work
-    def merge(self, A, B):
-        new_so = A.merge(B,counter)
-        new_workspace = self.workspace.__copy__()
-        new_workspace -= A
-        new_workspace -= B
-        new_workspace += new_so
-        new_stage = Stage(self.lexical_array.__copy__(), new_workspace)
-        return new_stage
-'''
 
 
 class Derivation(object):
-    def __init__(self, i_lang: ILanguage, stages: List[Stage] = None, lex_array: LexicalArray = None):
+    def __init__(self, i_lang: ILanguage, stages: List[Stage] = None, word_list: List[LexicalItem] = None):
         """
         To initialize from a pre-existing derivation pass in list of stages.
         To initialize a new derivation, pass in a lexical array.
         """
         self.i_lang = i_lang
         if stages is None:
-            if lex_array is None:
-                raise Exception("A derivation requires either a list of stages or a lexical array to be initialized.")
+            if word_list is None:
+                raise Exception("You must pass in either a list of stages or a word list to initialize a derivation.")
             w_zero = Workspace(set())
-            stages = [Stage(lex_array, w_zero)]
-        self.stages = stages
+            counter = 0
+            lexical_array = []
+            for w in word_list:
+                assert w in i_lang.lexicon.lex
+                lexical_array.append(LexicalItemToken(w, counter))
+                counter += 1
+            stage_zero = Stage(LexicalArray(lexical_array), w_zero, counter)
+            self.stages = [stage_zero]
+        else:
+            assert word_list is None
+            self.stages = stages
+
 
     # def verify(self):
     # todo: finish from definition 14 in C&S
@@ -266,19 +260,10 @@ class Derivation(object):
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
                 index2 = int(input("Enter the index of the second syntactic object you would like to Merge: "))
                 if last_stage.is_root(index1) or last_stage.is_root(index2):
-                    new_stage = last_stage.merge(index1, index2)
+                    new_stage = last_stage.merge_s(index1, index2)
                     self.stages.append(new_stage)
                 else:
                     print("One of the syntactic objects must be a root of some tree in the workspace")
-
-                '''             This didn't work
-                A = last_stage.workspace.find(index1)
-                B = last_stage.workspace.find(index2)
-                if last_stage.is_root(A) or last_stage.is_root(B):
-                    new_stage = last_stage.merge(A, B)
-                    self.stages.append(new_stage)
-                    break
-                '''
             elif instruction == "s":
                 index = -1
                 lexical_item_token = None
