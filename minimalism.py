@@ -3,15 +3,11 @@ from typing import *
 # for xml parsing of imported lexicon
 import os
 from xml.etree import ElementTree
-# for xml parsing of imported lexicon
-import os
-from xml.etree import ElementTree
 
 
 class Feature(object):
     def __init__(self):
         pass
-    """what are these?"""
 
 class Syn_Feature(Feature):
     def __init__(self):
@@ -25,6 +21,11 @@ class Sem_Feature(Feature):
 
 class Cat_Feature(Syn_Feature):
     def __init__(self, label: str):
+        super(Syn_Feature, self).__init__()
+        pass
+
+class Cat_Feature(Syn_Feature):
+    def __init__(self, label):
         super(Cat_Feature, self).__init__()
         self.label = label
         
@@ -114,6 +115,7 @@ class Lexicon(object):
             syn_set.union(cat_set)
             new_word = LexicalItem(syn_set, sem_set, phon_set)
             self.lex.add(new_word)
+
 
 class ILanguage(object):
     def __init__(self, lexicon, ug):
@@ -385,6 +387,7 @@ counter = 100
 
 # for xml parsing of imported lexicon
 
+
 # for xml parsing of imported lexicon
 # Chris: xml parsing done in the lexicon constructor
 
@@ -396,7 +399,10 @@ def main():
         for f in w.phon:
             print(f.label)
 
-    '''
+'''
+# main that runs Omar's new merge
+def main():
+
     # Syntactic fragment
     ncat = Cat_Feature("N")
     nsel = Sel_Feature("N")
@@ -429,7 +435,8 @@ def main():
 
     while (True):
         derivation.derive()
-    '''
+
+'''
     
 
 main()
