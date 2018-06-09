@@ -92,8 +92,8 @@ class SyntacticObjectSet(SyntacticObject):
 
     def __str__(self):
         set_strings = {str(obj) for obj in self.syntactic_object_set}
-        rep = "< " + str(self.idx) + ": " + str(set_strings) + " >"
-        return str(rep)
+        rep = "< " + str(self.idx) + ": " + ", ".join(set_strings) + " >"
+        return rep
 
 
 class LexicalItemToken(SyntacticObject):
@@ -118,7 +118,7 @@ class LexicalArray(object):
 
     def __str__(self):
         set_strings = {str(token) for token in self.the_list}
-        rep = "Lex Array: " + str(set_strings)
+        rep = "Lex Array: \n" + "\n".join(set_strings)
         return rep
 
     def find(self, idx):
@@ -207,7 +207,7 @@ class Stage(object):
             new_LA = LexicalArray(new_LI_set)
             new_w = self.workspace.__copy__()
             new_w = new_w.__add__(a)
-            new_stage = Stage(self.lexical_array, new_w)
+            new_stage = Stage(new_LA, new_w)
             return new_stage
 
     # Omar: Stage.merge() now calls Workspace.merge(),
@@ -257,10 +257,10 @@ class Derivation(object):
 
     def derive(self):
         """side effects only. Modifies self.stages"""
-        last_stage = self.stages[-1]
-        print(last_stage.lexical_array.__str__())
-        print(last_stage.workspace.__str__())
         while (True):
+            last_stage = self.stages[-1]
+            print(last_stage.lexical_array.__str__())
+            print(last_stage.workspace.__str__(),'\n')
             instruction = input("Select (s) or Merge (m)? ")
             if instruction == "m":
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
@@ -268,7 +268,6 @@ class Derivation(object):
                 if last_stage.is_root(index1) or last_stage.is_root(index2):
                     new_stage = last_stage.merge(index1, index2)
                     self.stages.append(new_stage)
-                    break
                 else:
                     print("One of the syntactic objects must be a root of some tree in the workspace")
 
@@ -288,5 +287,9 @@ class Derivation(object):
                     lexical_item_token = last_stage.lexical_array.find(index)
                 new_stage = last_stage.select(lexical_item_token)
                 self.stages.append(new_stage)
+            else:
+                print("Please type either 's' for Select or 'm' for Merge".upper(), '\n')
+                pass
+
 
 

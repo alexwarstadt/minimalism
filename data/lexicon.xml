@@ -16,4 +16,21 @@
         </syn>
         <sem>none</sem>
     </word>
+    <word>
+        <phon>ate</phon>
+        <syn>
+            <cat>V</cat>
+            <sel>N</sel>
+            <sel>N</sel>
+        </syn>
+        <sem>none</sem>
+    </word>
+    <word>
+        <phon>apples</phon>
+        <syn>
+            <cat>N</cat>
+            <sel>none</sel>
+        </syn>
+        <sem>none</sem>
+    </word>
 </root>
