@@ -1,0 +1,19 @@
+<?xml version='1.0' ?>
+<root>
+    <word>
+        <phon>K8</phon>
+        <syn>
+            <cat>N</cat>
+            <sel>none</sel>
+        </syn>
+        <sem>none</sem>
+    </word>
+    <word>
+        <phon>runs</phon>
+        <syn>
+            <cat>V</cat>
+            <sel>N</sel>
+        </syn>
+        <sem>none</sem>
+    </word>
+</root>
