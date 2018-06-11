@@ -1,5 +1,6 @@
 from typing import *
 from .features import *
+from .trees import tree
 
 
 class UniversalGrammar(object):
@@ -29,6 +30,7 @@ class SyntacticObject(object):
 
     def __init__(self, idx: int):
         self.idx = idx
+
 
     def i_contains(self, a):
         """self immediately contains a if a is an element of self"""
@@ -255,6 +257,9 @@ class Derivation(object):
             last_stage = self.stages[-1]
             print(last_stage.lexical_array.__str__())
             print(last_stage.workspace.__str__(),'\n')
+            tr_list = [ tree(x) for x in last_stage.workspace.w ]
+            for tr in tr_list:
+                tr.pretty_print()
             instruction = input("Select (s) or Merge (m)? ")
             if instruction == "m":
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
