@@ -69,6 +69,20 @@ class SyntacticObject(object):
                         return found
                 return None
 
+    def paths(self, so: SyntacticObject):
+        """ returns all paths to self starting at so """
+        if so == self:
+            return [self]
+        else:
+            if type(so) is LexicalItemToken:
+                return []
+            elif type(so) is SyntacticObjectSet:
+                return set([self.paths(x).append(x) for x in so.syntactic_object_set])
+
+
+
+
+
 
 class LexicalItem(object):
     def __init__(self, syn, sem, phon):
@@ -181,8 +195,10 @@ class Workspace(object):
         new_obj = A.merge(B, idx)
         new_set = self.w
         new_set.add(new_obj)
-        new_set.remove(A)
-        new_set.remove(B)
+        if self.is_root(i):
+            new_set.remove(A)
+        if self.is_root(j):
+            new_set.remove(B)
         return Workspace(new_set)
 
 
@@ -211,6 +227,8 @@ class Stage(object):
     # I'm passing indices instead of objects to get around
     # object equality testing bug
     def merge_s(self, i, j):
+        if i == j:
+            raise MergeError("\nERROR: Self-Merge is undefined.\n")
         old_workspace = self.workspace
         new_workspace = old_workspace.merge_w(i, j, self.counter)
         self.counter += 1
@@ -265,8 +283,11 @@ class Derivation(object):
                 index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
                 index2 = int(input("Enter the index of the second syntactic object you would like to Merge: "))
                 if last_stage.is_root(index1) or last_stage.is_root(index2):
-                    new_stage = last_stage.merge_s(index1, index2)
-                    self.stages.append(new_stage)
+                    try:
+                        new_stage = last_stage.merge_s(index1, index2)
+                        self.stages.append(new_stage)
+                    except MergeError as inst:
+                        print(inst.message)
                 else:
                     print("One of the syntactic objects must be a root of some tree in the workspace")
             elif instruction == "s":
@@ -277,9 +298,14 @@ class Derivation(object):
                     lexical_item_token = last_stage.lexical_array.find(index)
                 new_stage = last_stage.select(lexical_item_token)
                 self.stages.append(new_stage)
+            elif instruction == "debug":
+
             else:
                 print("Please type either 's' for Select or 'm' for Merge".upper(), '\n')
                 pass
 
 
+class MergeError(Exception):
+    def __init__(self, message):
+        self.message = message
 
