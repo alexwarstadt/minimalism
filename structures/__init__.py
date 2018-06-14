@@ -7,3 +7,4 @@ from .definitions import *
 from .features import *
 from .lexicon import *
 from .trees import tree
+from .syntacticobjects import *
