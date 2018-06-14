@@ -1,10 +1,14 @@
 from typing import *
 from .features import *
-from .syntacticobjects import *
+from .syntactic_objects import *
 from .trees import tree
 
 
 class UniversalGrammar(object):
+    """
+    Definition 1: Universal Grammar is a 6-tuple: 〈PHON-F,SYN-F,SEM-F,Select,Merge,Transfer.
+    Attributes: @syn_f, @sem_F, @phon_F
+    """
     def __init__(self, syn_F, sem_F, phon_F):
         self.syn_F: Set[Syn_Feature] = syn_F
         self.sem_F: Set[Sem_Feature] = sem_F
@@ -21,11 +25,17 @@ class UniversalGrammar(object):
 
 
 class ILanguage(object):
+    """
+    Definition 4: An I-language is a pair 〈Lex,UG〉 where Lex is a lexicon and UG is Universal Grammar    
+    """
     def __init__(self, lexicon, ug):
         self.lexicon = lexicon
         self.ug = ug
 
 class LexicalArray(object):
+    """
+    Definition 6: A lexical array (LA) is a finite set of lexical item tokens.
+    """
     def __init__(self, the_list):
         self.the_list: Set[LexicalItemToken] = the_list
 
@@ -76,15 +86,21 @@ class Workspace(object):
             rep = "Workspace: " + str(set_strings)
             return rep
 
-    """ calls SyntacticObject.find() in module 'syntacticobjects.py' """
     def find_workspace(self, idx: int):
+        """ calls SyntacticObject.find() in module 'syntacticobjects.py' """
         for syn_obj in self.w:
             found = syn_obj.find(idx)
-            if found != None:
+            if found is not None:
                 return found
-        raise Exception("There is no syntactic object with this index in the workspace.")
+        raise InteractionError("There is no syntactic object with this index in the workspace.")
+
 
     def is_root(self, idx: int):
+        """
+        DEFINITION 11:
+        For any syntactic object X and any stage S =〈LA,W〉with workspace W, 
+        if X is in W, X isa root in W.
+        """
         results = [x for x in self.w if x.idx == idx]
         if len(results) == 1:
             return True
@@ -108,6 +124,13 @@ class Workspace(object):
 
 
 class Stage(object):
+    """
+    DEFINITION 10:
+    A stage is a pair S = < LA,W >, where
+        LA is a lexical array and 
+        W is a set of syntactic objects. 
+    We call W the workspace of S.
+    """
     def __init__(self, lexical_array: LexicalArray, w: Workspace, counter):
         self.lexical_array = lexical_array
         self.workspace = w
@@ -115,6 +138,12 @@ class Stage(object):
 
 
     def select_stage(self, a: LexicalItemToken):
+        """
+        DEFINITION 12:
+        Let S be a stage in a derivation S = < LA,W >. 
+        If lexical token A is in LA, then Select(A,S)  =  < LA - {A}, W ∪ {A} >
+        :return: the stage resulting from Select(a,self)
+        """
         if a not in self.lexical_array.the_list:
             raise Exception("The lexical array does not contain this lexical item.")
         else:
@@ -130,8 +159,19 @@ class Stage(object):
     # I'm passing indices instead of objects to get around
     # object equality testing bug
     def merge_stage(self, i, j):
+        """
+        DEFINITION 13:
+        Given any two distinct syntactic objects A, B, Merge(A,B) = {A,B}.
+        ( comment: for parallelism with Select, consider the following definition:
+            Let S be a stage in a derivation S = < LA,W >. 
+            If A and B are distinct syntactic objects s.t.
+                a) A or B is a root in W
+                b) if A or B is not a root in W, it is contained within a root in W
+            Merge(A,B,S) = < LA, (W - (A∪B)) ∪ {A,B} > )
+        :return: the stage resulting from Merge
+        """
         if i == j:
-            raise MergeError("\nERROR: Self-Merge is undefined.\n")
+            raise InteractionError("Self-Merge is undefined.")
         old_workspace = self.workspace
         new_workspace = old_workspace.merge_workspace(i, j, self.counter)
         self.counter += 1
@@ -139,92 +179,15 @@ class Stage(object):
         return new_stage
 
 
-class Derivation(object):
-    def __init__(self, i_lang: ILanguage, stages: List[Stage] = None, word_list: List[LexicalItem] = None):
-        """
-        To initialize from a pre-existing derivation pass in list of stages.
-        To initialize a new derivation, pass in a lexical array.
-        """
-        self.i_lang = i_lang
-        if stages is None:
-            if word_list is None:
-                raise Exception("You must pass in either a list of stages or a word list to initialize a derivation.")
-            w_zero = Workspace(set())
-            counter = 0
-            lexical_array = []
-            for w in word_list:
-                assert w in i_lang.lexicon.lex
-                lexical_array.append(LexicalItemToken(w, counter))
-                counter += 1
-            stage_zero = Stage(LexicalArray(lexical_array), w_zero, counter)
-            self.stages = [stage_zero]
-        else:
-            assert word_list is None
-            self.stages = stages
 
 
-    # def verify(self):
-    # todo: finish from definition 14 in C&S
-    # for lex_tok in self.stages[0].lexical_array.the_list:
-    #     if lex_tok not in self.i_lang.lexicon:
-    #         raise Exception(str(lex_tok) + ":  this word is not in the lexicon.")
-    # if (len(self.stages[0].w.syntactic_object_set) != 0):
-    #     raise Exception("The initial workspace is not empty.")
-    # consider whether verifying constraints on valid derivations in necessary
 
-    def derive(self):
-        """side effects only. Modifies self.stages"""
-        while (True):
-            self.print_derivation()
-            instruction = input("Select (s) or Merge (m)? ")
-            if instruction == "m":
-                self.merge_step()
-            elif instruction == "s":
-                self.select_step()
-            elif instruction == "debug":
-                self.debug()
-            elif instruction == "exit":
-                break
-            else:
-                print("Please type either 's' for Select or 'm' for Merge".upper(), '\n')
-                pass
-
-    def merge_step(self):
-        last_stage = self.stages[-1]
-        index1 = int(input("Enter the index of the first syntactic object you would like to Merge: "))
-        index2 = int(input("Enter the index of the second syntactic object you would like to Merge: "))
-        if last_stage.workspace.is_root(index1) or last_stage.workspace.is_root(index2):
-            try:
-                new_stage = last_stage.merge_stage(index1, index2)
-                self.stages.append(new_stage)
-            except MergeError as inst:
-                print(inst.message)
-        else:
-            print("One of the syntactic objects must be a root of some tree in the workspace")
-
-    def select_step(self):
-        last_stage = self.stages[-1]
-        index = -1
-        lexical_item_token = None
-        while (lexical_item_token is None):
-            index = int(input("Enter the index of the token you would like to Select: "))
-            lexical_item_token = last_stage.lexical_array.find_lexical_array(index)
-        new_stage = last_stage.select_stage(lexical_item_token)
-        self.stages.append(new_stage)
-
-    def print_derivation(self):
-        last_stage = self.stages[-1]
-        print(last_stage.lexical_array.__str__())
-        print(last_stage.workspace.__str__(), '\n')
-        tr_list = [tree(x) for x in last_stage.workspace.w]
-        for tr in tr_list:
-            tr.pretty_print()
-
-    def debug(self):
-        pass
-
-
-class MergeError(Exception):
+class InteractionError(Exception):
+    """
+    Raise whenever a user's input is uninterpretable or violates requirements from definitions
+    """
     def __init__(self, message):
         self.message = message
 
+    def __str__(self):
+        return "\nALERT: %s\n" % self.message
