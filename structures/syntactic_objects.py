@@ -28,14 +28,17 @@ class SyntacticObject(object):
         DEFINITION 9: Let A and B be syntactic objects, then B contains A iff
             (i) B immediately contains A, or 
             (ii) for some syntactic object C, B immediately contains C and C contains A.
+            
+        Returns True if self contains a, False otherwise
         """
         if type(self) is SyntacticObjectSet:
             if self.immediately_contains(a):
                 return True
             else:
                 to_return = False
-                for daughter in a.syntactic_object_set:
-                    to_return = to_return or daughter.contains(a)
+                for daughter in self.syntactic_object_set:
+                    if type(daughter) is SyntacticObjectSet:
+                        to_return = to_return or daughter.contains(a)
                 return to_return
         else:
             return False
