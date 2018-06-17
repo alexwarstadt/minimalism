@@ -18,8 +18,17 @@ class Sem_Feature(Feature):
 
 
 class Cat_Feature(Syn_Feature):
-    def __init__(self, label):
+    def __init__(self, label: str):
         super(Cat_Feature, self).__init__()
+        self.label = label
+
+    def __str__(self):
+        rep = self.label
+        return rep
+
+class Trigger_Feature(Syn_Feature):
+    def __init__(self, label: str):
+        super(Trigger_Feature, self).__init__()
         self.label = label
 
     def __str__(self):

@@ -44,9 +44,21 @@ class SyntacticObject(object):
             return False
 
     def merge(self, a, idx: int):
-        """:return: a syntactic object with the index idx, containing self and a"""
         new_so = SyntacticObjectSet(set([self, a]), idx)
         return new_so
+
+    # new merge, works with trigger features
+    def merge_triggered(self, a, idx: int):
+        """:return: a syntactic object with the index idx, containing self and a"""
+        if self.triggers == []:
+            return None
+        elif a.triggers != []:
+            return None
+        else:
+            this_trigger = { f for f in self.triggers if f in a.lexical_item.syn }
+            new_so = SyntacticObjectSet(set([self, a]), idx)
+            new_so.triggers = self.triggers.difference(this_trigger)
+            return new_so
 
 
     def find(self, idx: int):
@@ -152,12 +164,6 @@ class SyntacticObject(object):
             return to_return
         else:
             return False
-            
-        
-
-
-
-
 
 
 class LexicalItem(object):
@@ -183,6 +189,8 @@ class SyntacticObjectSet(SyntacticObject):
     def __init__(self, the_set: Set[SyntacticObject], idx: int):
         super(SyntacticObjectSet, self).__init__(idx)
         self.syntactic_object_set: Set[SyntacticObject] = the_set
+        # can edit this inside merge, or add it to init, either way
+        self.triggers = []
 
     def __str__(self):
         set_strings = {str(obj) for obj in self.syntactic_object_set}
@@ -197,6 +205,7 @@ class LexicalItemToken(SyntacticObject):
     def __init__(self, lexical_item: LexicalItem, idx: int):
         super(LexicalItemToken, self).__init__(idx)
         self.lexical_item = lexical_item
+        self.triggers = { f for f in self.lexical_item.syn if type(f) is Trigger_Feature }
 
     def __str__(self):
         rep = "< " + str(self.idx) + ": " + str(self.lexical_item) + " >"
