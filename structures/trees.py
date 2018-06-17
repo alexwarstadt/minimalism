@@ -16,8 +16,8 @@ def tree(so):
         ph_label = ph[0].label
         tr = Tree(cat_label + "," + str(so.idx), [ph_label])
     elif type (so) is s.definitions.SyntacticObjectSet:
-        cat_label = "#"
+        cat_label = so.category.label
         obj_set = so.syntactic_object_set
-        tr = Tree(cat_label + "," + str(so.idx), [ tree(x) for x in obj_set ])
+        tr = Tree(str(so.idx) + "," + cat_label, [ tree(x) for x in obj_set ])
     return tr
 

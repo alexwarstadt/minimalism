@@ -33,7 +33,7 @@ class Trigger_Feature(Syn_Feature):
 
     def __str__(self):
         rep = self.label
-        return rep
+        return "_" + rep
 
 
 class Sel_Feature(Syn_Feature):

@@ -1,5 +1,6 @@
 from typing import *
 from .features import *
+from .definitions import *
 
 class SyntacticObject(object):
     """
@@ -13,6 +14,14 @@ class SyntacticObject(object):
     def __init__(self, idx: int):
         self.idx = idx
 
+
+    def category(self):
+        if type(self) is LexicalItemToken:
+            result = [ f for f in self.lexical_item.syn if type(f) is Cat_Feature ]
+            assert len(result) == 1
+        elif type(self) is SyntacticObjectSet:
+            result = None
+        return result
 
     def immediately_contains(self, a):
         """
@@ -43,21 +52,24 @@ class SyntacticObject(object):
         else:
             return False
 
-    def merge(self, a, idx: int):
-        new_so = SyntacticObjectSet(set([self, a]), idx)
-        return new_so
-
-    # new merge, works with trigger features
-    def merge_triggered(self, a, idx: int):
+    # def merge(self, a, idx: int):
         """:return: a syntactic object with the index idx, containing self and a"""
-        if self.triggers == []:
-            return None
-        elif a.triggers != []:
-            return None
+    #     new_so = SyntacticObjectSet(set([self, a]), set(), None, idx)
+    #     return new_so
+
+    def merge(self, a, idx: int):
+        """ new merge, works with trigger features 
+        :param: takes two syntactic objects and an index
+        :return: a syntactic object with the index idx, containing self and a"""
+        if self.triggers == set():
+            raise Exception("First argument of merge has no trigger features.")
+        elif a.triggers != set():
+            raise Exception("Second argument of merge has illicit trigger features.")
         else:
-            this_trigger = { f for f in self.triggers if f in a.lexical_item.syn }
-            new_so = SyntacticObjectSet(set([self, a]), idx)
-            new_so.triggers = self.triggers.difference(this_trigger)
+            matching_triggers = [ f for f in self.triggers if f.label == a.category.label ]
+            trigger = matching_triggers[0]
+            new_triggers = { f for f in self.triggers if f != trigger }
+            new_so = SyntacticObjectSet(set([self, a]), new_triggers, self.category, idx)
             return new_so
 
 
@@ -178,7 +190,7 @@ class LexicalItem(object):
         self.phon: Set[Phon_Feature] = phon
 
     def __str__(self):
-        syn_features = {str(f) for f in self.syn}
+        syn_features = [str(f) for f in self.syn]
         phon_features = {str(f) for f in self.phon}
         rep = "( Syn: " + str(syn_features) + ", Phon: " + str(phon_features) + " )"
         return rep
@@ -186,15 +198,16 @@ class LexicalItem(object):
 
 class SyntacticObjectSet(SyntacticObject):
     """See DEFINTION 7 (ii)"""
-    def __init__(self, the_set: Set[SyntacticObject], idx: int):
+    def __init__(self, the_set: Set[SyntacticObject], triggers, category, idx: int):
         super(SyntacticObjectSet, self).__init__(idx)
         self.syntactic_object_set: Set[SyntacticObject] = the_set
         # can edit this inside merge, or add it to init, either way
-        self.triggers = []
+        self.triggers = triggers
+        self.category = category
 
     def __str__(self):
         set_strings = {str(obj) for obj in self.syntactic_object_set}
-        rep = "< " + str(self.idx) + ": " + ", ".join(set_strings) + " >"
+        rep = "< " + str(self.idx) + "," + str(self.category) + "," + str([str(t) for t in self.triggers]) + ": " + ", ".join(set_strings) + " >"
         return rep
 
 
@@ -206,7 +219,11 @@ class LexicalItemToken(SyntacticObject):
         super(LexicalItemToken, self).__init__(idx)
         self.lexical_item = lexical_item
         self.triggers = { f for f in self.lexical_item.syn if type(f) is Trigger_Feature }
+        cat_features = { f for f in self.lexical_item.syn if type(f) is Cat_Feature }
+        assert len(cat_features) == 1
+        (category, ) = cat_features
+        self.category = category
 
     def __str__(self):
-        rep = "< " + str(self.idx) + ": " + str(self.lexical_item) + " >"
+        rep = "< " + str(self.idx) + "," + str(self.category) + ": " + str(self.lexical_item) + " >"
         return rep

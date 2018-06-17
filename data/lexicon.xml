@@ -4,7 +4,6 @@
         <phon>K8</phon>
         <syn>
             <cat>N</cat>
-            <sel>none</sel>
         </syn>
         <sem>none</sem>
     </word>
@@ -29,7 +28,6 @@
         <phon>apples</phon>
         <syn>
             <cat>N</cat>
-            <sel>none</sel>
         </syn>
         <sem>none</sem>
     </word>
