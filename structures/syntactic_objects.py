@@ -70,13 +70,29 @@ class SyntacticObject(object):
         a sequence of syntactic objects < SO_1,SO_2,...,SO_n > where for all 0 < i < n, SO_{i+1} is in SO_i.
         :return: all paths to self starting at so 
         """
-        if so == self:
-            return [self]
-        else:
-            if type(so) is LexicalItemToken:
-                return []
-            elif type(so) is SyntacticObjectSet:
-                return set([self.paths(x).append(x) for x in so.syntactic_object_set])
+        def path_finder(self, other, current_path, paths):
+            """Helper Function"""
+            if type(other) is SyntacticObjectSet:
+                for x in other.syntactic_object_set:
+                    if x is self:
+                        new_path = current_path.copy() + [x]
+                        paths.add(tuple(new_path)) # Crucial: Use "add" for a new path, if it's only one.
+
+                    elif x.contains(self):
+                        print("Contains, but isn't?")
+                        new_path = current_path.copy() + [x]
+                        paths.union(path_finder(self, x, new_path, paths))
+                        
+            return paths
+        
+        if type(so) is SyntacticObjectSet:
+            if so.contains(self) is True:
+                startpath = [so]
+                startpaths = set()
+                return path_finder(self, so, startpath, startpaths)
+        elif so is self:
+            return {self}
+        else: return {}
 
 
 
