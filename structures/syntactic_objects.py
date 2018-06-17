@@ -79,7 +79,6 @@ class SyntacticObject(object):
                         paths.add(tuple(new_path)) # Crucial: Use "add" for a new path, if it's only one.
 
                     elif x.contains(self):
-                        print("Contains, but isn't?")
                         new_path = current_path.copy() + [x]
                         paths.union(path_finder(self, x, new_path, paths))
                         
