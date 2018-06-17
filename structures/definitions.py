@@ -1,6 +1,7 @@
 from typing import *
 from .features import *
 from .syntactic_objects import *
+from .errors import *
 from .trees import tree
 
 
@@ -178,16 +179,3 @@ class Stage(object):
         new_stage = Stage(self.lexical_array.__copy__(), new_workspace, self.counter)
         return new_stage
 
-
-
-
-
-class InteractionError(Exception):
-    """
-    Raise whenever a user's input is uninterpretable or violates requirements from definitions
-    """
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return "\nALERT: %s\n" % self.message

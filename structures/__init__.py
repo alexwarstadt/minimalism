@@ -8,3 +8,4 @@ from .features import *
 from .lexicon import *
 from .trees import tree
 from .syntactic_objects import *
+from .errors import *

@@ -1,6 +1,6 @@
 from typing import *
 from .features import *
-from .definitions import *
+from .errors import *
 
 class SyntacticObject(object):
     """
@@ -62,9 +62,9 @@ class SyntacticObject(object):
         :param: takes two syntactic objects and an index
         :return: a syntactic object with the index idx, containing self and a"""
         if self.triggers == set():
-            raise Exception("First argument of merge has no trigger features.")
+            raise InteractionError("First argument of merge has no trigger features.")
         elif a.triggers != set():
-            raise Exception("Second argument of merge has illicit trigger features.")
+            raise InteractionError("Second argument of merge has illicit trigger features.")
         else:
             matching_triggers = [ f for f in self.triggers if f.label == a.category.label ]
             trigger = matching_triggers[0]
