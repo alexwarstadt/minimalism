@@ -94,6 +94,41 @@ class SyntacticObject(object):
             return {self}
         else: return {}
 
+    def c_commands(self, other, in_sos):
+        """
+        DEFINITION 20:
+        Let A and B be syntactic objects, then A c-commands B in D, iff there is
+        a syntactic object C, such that:
+            i) C is a sister of A in D, and
+            ii) either B == C, or C contains B
+        """
+        
+        def sister_finder(self, container, sisterset = set()):
+            for daughter in container.syntactic_object_set:
+                if daughter.idx == self.idx:
+                    newsister = container.syntactic_object_set - {daughter}
+                    sisterset.add(newsister.pop())
+                else:
+                    if type(daughter) is SyntacticObjectSet:
+                        if daughter.contains(self):
+                            sisterset.union(sister_finder(self, daughter, sisterset))
+            return sisterset
+                        
+            
+        if in_sos.contains(self) and in_sos.contains(other):
+            sisterset = sister_finder(self, in_sos)
+            to_return = False
+            print(sisterset)
+            for sister in sisterset:
+                if sister.contains(other) or sister.idx == other.idx:
+                    to_return = True
+            return to_return
+        else:
+            return False
+            
+        
+
+
 
 
 
