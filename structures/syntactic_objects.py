@@ -78,17 +78,18 @@ class SyntacticObject(object):
                         new_path = current_path.copy() + [x]
                         paths.add(tuple(new_path)) # Crucial: Use "add" for a new path, if it's only one.
 
-                    elif x.contains(self):
-                        new_path = current_path.copy() + [x]
-                        paths.union(path_finder(self, x, new_path, paths))
+                    elif type(x) is SyntacticObjectSet:
+                        if x.contains(self):
+                            new_path = current_path.copy() + [x]
+                            paths.union(path_finder(self, x, new_path, paths))
                         
             return paths
         
         if type(so) is SyntacticObjectSet:
             if so.contains(self) is True:
                 startpath = [so]
-                startpaths = set()
-                return path_finder(self, so, startpath, startpaths)
+                initialset = set()
+                return path_finder(self, so, startpath, initialset)
         elif so is self:
             return {self}
         else: return {}
