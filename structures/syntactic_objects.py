@@ -118,10 +118,37 @@ class SyntacticObject(object):
         if in_sos.contains(self) and in_sos.contains(other):
             sisterset = sister_finder(self, in_sos)
             to_return = False
-            print(sisterset)
+#            print(sisterset) # debug
             for sister in sisterset:
                 if sister.contains(other) or sister.idx == other.idx:
                     to_return = True
+            return to_return
+        else:
+            return False
+        
+    def asymmetric_c_command(self, other, in_sos):
+        """
+        A asymmetrically c-commands B in C, if A c-commands B in C, and A and B are not sisters
+        """
+        def sister_finder(self, container, sisterset = set()):
+            for daughter in container.syntactic_object_set:
+                if daughter.idx == self.idx:
+                    newsister = container.syntactic_object_set - {daughter}
+                    sisterset.add(newsister.pop())
+                else:
+                    if type(daughter) is SyntacticObjectSet:
+                        if daughter.contains(self):
+                            sisterset.union(sister_finder(self, daughter, sisterset))
+            return sisterset
+                        
+            
+        if in_sos.contains(self) and in_sos.contains(other):
+            sisterset = sister_finder(self, in_sos)
+            to_return = False
+            if not other in sisterset:
+                for sister in sisterset:
+                    if sister.contains(other) or sister.idx == other.idx:
+                        to_return = True
             return to_return
         else:
             return False
