@@ -67,6 +67,8 @@ class SyntacticObject(object):
             raise InteractionError("Second argument of merge has illicit trigger features.")
         else:
             matching_triggers = [ f for f in self.triggers if f.label == a.category.label ]
+            if matching_triggers == []:
+                raise InteractionError("The trigger feature of the head does not match the category of the complement.")
             trigger = matching_triggers[0]
             new_triggers = { f for f in self.triggers if f != trigger }
             new_so = SyntacticObjectSet(set([self, a]), new_triggers, self.category, idx)
