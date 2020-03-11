@@ -180,7 +180,7 @@ class SyntacticObject(object):
         else:
             return False
 
-    def is_derivable(self, L: Lexicon): # Not implemented
+    def is_derivable(self, lexicon): # Not implemented
         """
         DEFINITION 15:
         A syntactic object A is derivable from lexicon L iff there is a derivation
@@ -191,7 +191,7 @@ class SyntacticObject(object):
         """
         pass
 
-    def does_occur(self, so: SyntacticObject): # Not implemented
+    def does_occur(self, so): # Not implemented
         """
         DEFINITION 17:
         B occurs in A at position P iff P = 〈A,. . .,B〉. We also say B has an occurrence in A at position P (written B_P).
@@ -201,7 +201,7 @@ class SyntacticObject(object):
         """
         pass
 
-    def occurrence(self, so: SyntacticObject): # Not done
+    def occurrence(self, so): # Not done
         """
         DEFINITION 17:
         B occurs in A at position P iff P = 〈A,. . .,B〉. We also say B has an occurrence in A at position P (written B_P).
@@ -212,16 +212,16 @@ class SyntacticObject(object):
         pass
         # Should check if does_occur is true, and if so, return the path.
 
-    def are_sisters(self, A: SyntacticObject, B: SyntacticObject):
+    def are_sisters(self, soA, soB):
         """
         Let A, B, C be syntactic objects (where A != B), then A and B are sisters in C iff A, B are in C.
         :param A:
         :param B:
         :return:
         """
-        if A == B:
+        if soA == soB:
             raise Exception("An object cannot be its own sister.")
-        if self.immediately_contains(A) and self.immediately_contains(B):
+        if self.immediately_contains(soA) and self.immediately_contains(soB):
             return True
         else:
             return False
