@@ -88,7 +88,7 @@ class Workspace(object):
             return rep
 
     def find_workspace(self, idx: int):
-        """ calls SyntacticObject.find() in module 'syntacticobjects.py' """
+        """ calls SyntacticObject.find() in module 'syntactic_objects.py' """
         for syn_obj in self.w:
             found = syn_obj.find(idx)
             if found is not None:

@@ -122,7 +122,7 @@ class SyntacticObject(object):
 
     def c_commands(self, other, in_sos):
         """
-        DEFINITION 20:
+        DEFINITION 21:
         Let A and B be syntactic objects, then A c-commands B in D, iff there is
         a syntactic object C, such that:
             i) C is a sister of A in D, and
@@ -154,6 +154,7 @@ class SyntacticObject(object):
         
     def asymmetric_c_command(self, other, in_sos):
         """
+        DEFINITION 21
         A asymmetrically c-commands B in C, if A c-commands B in C, and A and B are not sisters
         """
         def sister_finder(self, container, sisterset = set()):
@@ -179,6 +180,51 @@ class SyntacticObject(object):
         else:
             return False
 
+    def is_derivable(self, L: Lexicon): # Not implemented
+        """
+        DEFINITION 15:
+        A syntactic object A is derivable from lexicon L iff there is a derivation
+        〈〈LA_1,W_1〉,. . .,〈LA_n,W_n〉〉, where LA_n = {} and W_n = {A}.
+
+        :param L:
+        :return: True/False
+        """
+        pass
+
+    def does_occur(self, so: SyntacticObject): # Not implemented
+        """
+        DEFINITION 17:
+        B occurs in A at position P iff P = 〈A,. . .,B〉. We also say B has an occurrence in A at position P (written B_P).
+
+        :param so:
+        :return: True/False
+        """
+        pass
+
+    def occurrence(self, so: SyntacticObject): # Not done
+        """
+        DEFINITION 17:
+        B occurs in A at position P iff P = 〈A,. . .,B〉. We also say B has an occurrence in A at position P (written B_P).
+
+        :param so:
+        :return: Path/Position B_P
+        """
+        pass
+        # Should check if does_occur is true, and if so, return the path.
+
+    def are_sisters(self, A: SyntacticObject, B: SyntacticObject):
+        """
+        Let A, B, C be syntactic objects (where A != B), then A and B are sisters in C iff A, B are in C.
+        :param A:
+        :param B:
+        :return:
+        """
+        if A == B:
+            raise Exception("An object cannot be its own sister.")
+        if self.immediately_contains(A) and self.immediately_contains(B):
+            return True
+        else:
+            return False
 
 class LexicalItem(object):
     """
