@@ -189,6 +189,7 @@ class SyntacticObject(object):
         :param L:
         :return: True/False
         """
+
         pass
 
     def does_occur(self, so): # Not implemented

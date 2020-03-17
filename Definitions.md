@@ -99,30 +99,30 @@ Theorem 5: Every derivable syntactic object is binary branching
 ## 7 - Labels
 
 ### Definition 25 - Trigger Feature
+Features\Class Trigger_Feature(Syn_Feature)
+
+### Definition 26 - Triggers
+structures\syntactic_objects\SyntacticObjectSet.triggers
+
+### Definition 27 - (Triggered) Merge
+structures\syntactic_objects\SyntacticObjectSet.merge
+
+### Definition 28 - Label
 structures\
 
-### Definition 26
+### Definition 29 - Maximal Projection
 structures\
 
-### Definition 27 
+### Definition 30 - Minimal Projection
 structures\
 
-### Definition 28
+### Definition 31 - Immediate Projection
 structures\
 
-### Definition 29
+### Definition 32 - Complement
 structures\
 
-### Definition 30
-structures\
-
-### Definition 31
-structures\
-
-### Definition 32
-structures\
-
-### Definition 33
+### Definition 33 - Specifier
 structures\
 
 ## 8 - Transfer
@@ -130,39 +130,39 @@ structures\
 ### Definition 34
 structures\
 
-### Definition 35
+### Definition 35 - Strong Phase
 structures\
 
 ### Definition 36
 structures\
 
-### Definition 37 (replacing Definition 7)
+### Definition 37 (replacing Definition 7) - Syntactic Object
 structures\
 
-### Definition 38
+### Definition 38 - Derivation
 structures\
 
 ## 9 - Transfer_LF
 
-### Definition 39
+### Definition 39 - Transfer_LF
 structures\
 
 ## 10 - Transfer_PF
 
-### Definition 40
+### Definition 40 - Final
 structures\
 
-### Definition 41
+### Definition 41 - Transfer_PF
 structures\
 
 ## 13 - Convergence
 
-### Definition 42
+### Definition 42 - Convergence_CI
 structures\
 
-### Definition 43
+### Definition 43 - Convergence_SM
 structures\
 
-### Definition 44
+### Definition 44 - Convergence
 structures\
 
